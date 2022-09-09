@@ -94,21 +94,25 @@ class PostController extends Controller
      */
     // * @return \Illuminate\Http\JsonResponse
     // * @param  \App\Http\Requests\UpdatePostRequest  $request
-    public function update(Request $request, Post $post)
+    public function update(Request $request, Post $post, PostRepository $repository)
     {
-        $updated = $post->update([
-            'title' => $request->title ?? $post->title,
-            'body' => $request->body ?? $post->body
-        ]);
+        // $updated = $post->update([
+        //     'title' => $request->title ?? $post->title,
+        //     'body' => $request->body ?? $post->body
+        // ]);
 
-        if (!$updated) {
-            return new JsonResponse([
-                'errors' => [
-                    'Failed to update model post.'
-                ]
-            ], 400);
-        }
+        // if (!$updated) {
+        //     return new JsonResponse([
+        //         'errors' => [
+        //             'Failed to update model post.'
+        //         ]
+        //     ], 400);
+        // }
+        // return new PostResource($post);
 
+        $post = $repository->update($post, $request->only([
+            'title', 'body', 'user_ids'
+        ]));
         return new PostResource($post);
 
         // return new JsonResponse([
@@ -122,17 +126,19 @@ class PostController extends Controller
      * @param  \App\Models\Post  $post
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Post $post)
+    public function destroy(Post $post, PostRepository $repository)
     {
-        $deleted = $post->forceDelete();
+        $post = $repository->forceDelete($post);
 
-        if (!$deleted) {
-            return  new JsonResponse([
-                'errors' => [
-                    'Failed to delete model post.'
-                ]
-            ], 400);
-        }
+        // $deleted = $post->forceDelete();
+
+        // if (!$deleted) {
+        //     return  new JsonResponse([
+        //         'errors' => [
+        //             'Failed to delete model post.'
+        //         ]
+        //     ], 400);
+        // }
 
         return new JsonResponse([
             'data' => 'post deleted successfully!!'

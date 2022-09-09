@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Post;
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 class PostRepository
@@ -19,6 +20,39 @@ class PostRepository
                 $created->users()->sync($userIds);
             }
             return $created;
+        });
+    }
+
+    public function update(Post $post, array $attributes)
+    {
+        return DB::transaction(function () use ($post, $attributes) {
+            $updated = $post->update([
+                'title' => data_get($attributes, 'title', $post->title),
+                'body' =>  data_get($attributes, 'body',  $post->body)
+            ]);
+
+            if (!$updated) {
+                throw new \Exception('Failed to update post');
+            }
+
+            if ($userIds = data_get($attributes, 'user_ids')) {
+                $post->users()->sync($userIds);
+            }
+
+            return $post;
+        });
+    }
+
+    public function forceDelete(Post $post)
+    {
+        return DB::transaction(function () use ($post) {
+            $deleted = $post->forceDelete();
+
+            if (!$deleted) {
+                throw new \Exception("Cannot delete post!!");
+            }
+
+            return $deleted;
         });
     }
 }
